@@ -1,7 +1,8 @@
+using System.Diagnostics;
 Console.Title = "Discord Webhooks Generator";
 
 Console.ForegroundColor = ConsoleColor.Blue;
-Console.WriteLine("~~ Discord webhooks generator v2.1.1");
+Console.WriteLine("~~ Discord webhooks generator v2.1.2");
 Console.ResetColor();
 
 Console.Write("Webhook amount >> ");
@@ -42,8 +43,8 @@ if (File.Exists(webhookPath)) {
             // Truncating file
             using FileStream fs = File.OpenWrite(webhookPath);
             fs.SetLength(0);
-            fs.Dispose();
             fs.Close();
+            fs.Dispose();
         } catch (Exception e) {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Error. " + e.Message);
@@ -126,14 +127,14 @@ try {
     sw.Flush();
     Console.WriteLine(" Done!");
 
-    // Disposing streamwriter
-    Console.Write("Disposing StreamWriter...");
-    sw.Dispose();
-    Console.WriteLine(" Done!");
-
     // Closing streamwriter
     Console.Write("Closing StreamWriter...");
     sw.Close();
+    Console.WriteLine(" Done!");
+
+    // Disposing streamwriter
+    Console.Write("Disposing StreamWriter...");
+    sw.Dispose();
     Console.WriteLine(" Done!");
 } catch (Exception e) {
     Console.ForegroundColor = ConsoleColor.Red;
@@ -165,37 +166,40 @@ if (webhookCount == 1) {
 
     using StreamReader webhook = File.OpenText(webhookPath);
     string content = webhook.ReadLine();
+    webhook.Close();
+    webhook.Dispose();
 
-    using (System.Diagnostics.Process cmd = new()) {
-        cmd.StartInfo.FileName = "cmd.exe";
-        cmd.StartInfo.RedirectStandardInput = true;
-        cmd.StartInfo.RedirectStandardOutput = true;
-        cmd.StartInfo.CreateNoWindow = true;
-        cmd.StartInfo.UseShellExecute = false;
-        cmd.Start();
+    using Process cmd = new();
+    cmd.StartInfo.FileName = "cmd.exe";
+    cmd.StartInfo.RedirectStandardInput = true;
+    cmd.StartInfo.RedirectStandardOutput = true;
+    cmd.StartInfo.CreateNoWindow = true;
+    cmd.StartInfo.UseShellExecute = false;
+    cmd.Start();
 
-        cmd.StandardInput.WriteLine("echo|set/p=" + content + "|clip");
-        cmd.StandardInput.Flush();
-        cmd.StandardInput.Close();
-        cmd.WaitForExit();
-    }
+    cmd.StandardInput.WriteLine("echo|set/p=" + content + "|clip");
+    cmd.StandardInput.Flush();
+    cmd.StandardInput.Close();
+    cmd.WaitForExit();
+    cmd.Dispose();
 } else {
     Console.Write("Press any key to open webhooks file and terminate the program...");
     Console.ReadKey();
 
-    using (System.Diagnostics.Process cmd = new()) {
-        cmd.StartInfo.FileName = "cmd.exe";
-        cmd.StartInfo.RedirectStandardInput = true;
-        cmd.StartInfo.RedirectStandardOutput = true;
-        cmd.StartInfo.CreateNoWindow = true;
-        cmd.StartInfo.UseShellExecute = false;
-        cmd.Start();
+    using Process cmd = new();
+    cmd.StartInfo.FileName = "cmd.exe";
+    cmd.StartInfo.RedirectStandardInput = true;
+    cmd.StartInfo.RedirectStandardOutput = true;
+    cmd.StartInfo.CreateNoWindow = true;
+    cmd.StartInfo.UseShellExecute = false;
+    cmd.Start();
 
-        cmd.StandardInput.WriteLine(webhookPath);
-        cmd.StandardInput.Flush();
-        cmd.StandardInput.Close();
-        cmd.WaitForExit();
-    }
+    cmd.StandardInput.WriteLine(webhookPath);
+    cmd.StandardInput.Flush();
+    cmd.StandardInput.Close();
+    cmd.WaitForExit();
+    cmd.Dispose();
 }
 
+// Exiting the application and sending status code zero.
 Environment.Exit(0);
